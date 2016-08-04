@@ -34,30 +34,59 @@ Warning: large Input/Output data, be careful with certain languages
 (though most should be OK if the algorithm is well designed)
 """
 
-import math
-import sys
-from collections import defaultdict
+from math import sqrt
+primes = [2]
 
+for i in range(3,32000,2):
+    isprime = True
 
-def print_primes_between_start_and_end(start, end):
-    primes = defaultdict(lambda: 1)
-    for p in range(2, int(math.sqrt(end)) + 1):
-        if primes[p] == 1:
-            i = p << 1
-            while i <= end:
-                primes[i] = 0
-                i += p
+    cap = sqrt(i)+1
 
-    for k in range(start, end + 1):
-        if primes[k] == 1:
-            if k >= 2:
-                print(k)
+    for j in primes:
+        if (j >= cap):
+            break
+        if (i % j == 0):
+            isprime = False
+            break
+    if (isprime):
+        primes.append(i)
 
+T = int(input())
+output = ""
+for t in range(T):
+    if (t > 0):
+        output += "\n"
 
-lines = sys.stdin.readlines()
-number_of_lines = int(lines[0])
+    M, N = input().split(' ')
+    M = int(M)
+    N = int(N)
+    cap = sqrt(N) + 1
 
-for i in range(1, number_of_lines + 1):
-    m, n = lines[i].split()
-    print_primes_between_start_and_end(int(m), int(n))
-    print()
+    if (M < 2):
+        M = 2
+
+    isprime = [True] * 100001
+
+    for i in primes:
+        if (i >= cap):
+            break
+
+        if (i >= M):
+            start = i * 2
+        else:
+            start = M + ((i - M % i) % i)
+
+        # The two below, obscure lines create a continuous
+        #  block of false elements in order to set all
+        #  elements correspnding to numbers divisible by i
+        #  in isprime to be false
+        # In turns out that this runs substantially faster
+        #  than setting the elements individually using loops
+        falseblock = [False] * len(isprime[start-M:N+1-M:i])
+        isprime[start-M:N+1-M:i] = falseblock
+
+    for i in range(M,N+1):
+        if (isprime[i-M] == True):
+            output += str(i) + "\n"
+
+print(output[:-1])
